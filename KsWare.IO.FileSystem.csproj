@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9CB5A457-DF6F-4109-B272-86586CEF4F3B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KsWare.IO.FileSystem</RootNamespace>
+    <AssemblyName>KsWare.IO.FileSystem</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\KsWare.IO.FileSystem.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\KsWare.IO.FileSystem.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="KsWare.IO.NamedPipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\KsWare.IO.NamedPipes.1.0.0-CI00003\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
+    </Reference>
+    <Reference Include="Pri.LongPath, Version=2.0.45.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pri.LongPath.2.0.45\lib\net45\Pri.LongPath.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Directory.cs" />
+    <Compile Include="Directory.Pri.cs" />
+    <Compile Include="DirectoryInfo.cs" />
+    <Compile Include="File.cs" />
+    <Compile Include="File.Pri.cs" />
+    <Compile Include="FileInfo.cs" />
+    <Compile Include="Internal\BackupSemantics.cs" />
+    <Compile Include="Internal\FILE_ATTRIBUTE.cs" />
+    <Compile Include="Internal\PathHelper.cs" />
+    <Compile Include="Internal\ReparseData.cs" />
+    <Compile Include="Internal\VolumeMountPointHelper.cs" />
+    <Compile Include="Internal\WinApi.cs" />
+    <Compile Include="Path.cs" />
+    <Compile Include="Path.Pri.cs" />
+    <Compile Include="Internal\PrivilegedExecutor.cs" />
+    <Compile Include="ReparsePointType.cs" />
+    <Compile Include="ReparsePoint.cs" />
+    <Compile Include="HardLink.cs" />
+    <Compile Include="Internal\Helper.cs" />
+    <Compile Include="JunctionPoint.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SymbolicLink.cs" />
+    <Compile Include="VolumeMountPoint.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>KsWare.NuGet.PackageBuilder.exe -pp $(ProjectPath) -cn $(ConfigurationName) -pn $(PlatformName) -tp $(TargetPath)</PostBuildEvent>
+  </PropertyGroup>
+</Project>
