@@ -44,8 +44,14 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="KsWare.Console, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\KsWare.Console.1.0.0-CI00001\lib\net45\KsWare.Console.exe</HintPath>
+    </Reference>
     <Reference Include="KsWare.IO.NamedPipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\KsWare.IO.NamedPipes.1.0.0-CI00003\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
+    </Reference>
+    <Reference Include="KsWare.PrivilegedExecutor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\KsWare.PrivilegedExecutor.1.0.0-CI00010\lib\net45\KsWare.PrivilegedExecutor.exe</HintPath>
     </Reference>
     <Reference Include="Pri.LongPath, Version=2.0.45.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pri.LongPath.2.0.45\lib\net45\Pri.LongPath.dll</HintPath>
@@ -68,7 +74,6 @@
     <Compile Include="Internal\WinApi.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="Path.Pri.cs" />
-    <Compile Include="Internal\PrivilegedExecutor.cs" />
     <Compile Include="ReparsePointType.cs" />
     <Compile Include="ReparsePoint.cs" />
     <Compile Include="HardLink.cs" />
