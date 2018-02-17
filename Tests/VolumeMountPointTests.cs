@@ -9,8 +9,32 @@ namespace KsWare.IO.FileSystem.Tests {
 
 	[TestClass]
 	public class VolumeMountPointTests {
-
+		private Fixture _fixture;
 		private const string TestDrive = @"Y:\";
+
+//		[TestMethod]
+//		public void CreateTest() {
+//			Helper.DemandTestDriveAvailable(TestDrive);
+//			//Helper.DemandElevated();
+//
+//			var testFolder = Helper.GetTestFolder(TestDrive, "WriteTests", this);
+//			_fixture = new Fixture(() => Directory.Delete(testFolder, true));
+//
+//			Directory.CreateDirectory(testFolder);
+//			var originalFile = Path.Combine(testFolder, "original.txt");
+//			File.WriteAllText(originalFile, "Original");
+//
+//			var hardLink = Path.Combine(testFolder, "hardlink.txt");
+//			HardLink.Create(hardLink, originalFile);
+//
+//			Assert.AreEqual("Original", File.ReadAllText(hardLink));
+//		}
+
+		[TestCleanup]
+		public void Fixture() {
+			_fixture?.Cleanup();
+			_fixture = null;
+		}
 
 		[TestMethod]
 		public void CompleteTest() {

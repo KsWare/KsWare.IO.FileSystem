@@ -19,19 +19,23 @@ namespace KsWare.IO.FileSystem.Tests {
 		public static SignatureHelper ForCompare = new SignatureHelper(SignatureMode.Compare);
 		public static SignatureHelper ForCompareIgnoreReturnType = new SignatureHelper(SignatureMode.CompareIgnoreReturnType);
 		public static SignatureHelper ForCode = new SignatureHelper(SignatureMode.Code);
+		public static SignatureHelper InheriteDoc = new SignatureHelper(SignatureMode.InheriteDoc);
 
 		private SignatureHelper(SignatureMode signatureMode) { _signatureMode = signatureMode; }
 
 		public string Sig(MethodInfo arg) {
 			var sb = new StringBuilder();
 
-			if (arg.IsPublic) sb.Append("public ");
-			else if (arg.IsFamilyAndAssembly) sb.Append("protected internal ");
-			else if (arg.IsAssembly) sb.Append("internal ");
-			else if (arg.IsFamily) sb.Append("protected ");
+			if (_signatureMode != SignatureMode.InheriteDoc) {
+				if (arg.IsPublic) sb.Append("public ");
+				else if (arg.IsFamilyAndAssembly) sb.Append("protected internal ");
+				else if (arg.IsAssembly) sb.Append("internal ");
+				else if (arg.IsFamily) sb.Append("protected ");
 
-			if (arg.IsStatic) sb.Append("static ");
-			if (_signatureMode == SignatureMode.CompareIgnoreReturnType) { /*skip*/ }
+				if (arg.IsStatic) sb.Append("static ");
+			}
+
+			if (_signatureMode == SignatureMode.CompareIgnoreReturnType || _signatureMode==SignatureMode.InheriteDoc) { /*skip*/ }
 			else sb.Append(Sig(arg.ReturnType) + " ");
 			sb.Append(arg.Name);
 			sb.Append("(");
@@ -54,6 +58,7 @@ namespace KsWare.IO.FileSystem.Tests {
 			switch (_signatureMode) {
 				case SignatureMode.Compare:
 				case SignatureMode.CompareIgnoreReturnType:
+				case SignatureMode.InheriteDoc:
 					sb.Append(Sig(parameterInfo.ParameterType));
 					break;
 				case SignatureMode.Code:
@@ -111,7 +116,8 @@ namespace KsWare.IO.FileSystem.Tests {
 	internal enum SignatureMode {
 		Compare,
 		Code,
-		CompareIgnoreReturnType
+		CompareIgnoreReturnType,
+		InheriteDoc
 	}
 
 }

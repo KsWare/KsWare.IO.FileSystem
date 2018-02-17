@@ -6,10 +6,10 @@ namespace KsWare.IO.FileSystem.Tests {
 	[TestClass]
 	public class DirectoryTests {
 
-		[TestMethod()]
+		[TestMethod]
 		public void MemberTest() {
-			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Directory), typeof(Pri.LongPath.Directory)));
-			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Directory), typeof(System.IO.Directory)));
+			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Directory), typeof(Pri.LongPath.Directory), "System.IO.Directory."));
+			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Directory), typeof(System.IO.Directory), "System.IO.Directory"));
 		}
 	}
 

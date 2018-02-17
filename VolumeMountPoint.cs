@@ -47,7 +47,7 @@ namespace KsWare.IO.FileSystem
 				}
 			}
 			else {
-				var ret = PrivilegedExecutor.Client.ExecuteService(typeof(VolumeMountPoint).FullName +"."+ nameof(SetVolumeMountPointConsole), mountPoint, volumeName);
+				var ret = PrivilegedExecutor.Client.Execute(typeof(VolumeMountPoint),nameof(SetVolumeMountPointConsole), mountPoint, volumeName);
 				if (ret != 0)
 					throw Helper.IOException($"Unable to create volume mount point '{volumeName}' -> '{mountPoint}'.",
 						new Win32Exception(ret));

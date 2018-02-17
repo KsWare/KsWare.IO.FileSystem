@@ -3,6 +3,8 @@
 
 	public static class PathHelper {
 
+		public const int MaxPathLength = 32767;
+
 		public static bool HasPrefix(string path) {
 			if (path == null) return false;
 			if (path.StartsWith(@"\\?\")) return true;
@@ -35,7 +37,7 @@
 
 		public static string LongPathSupport(string path) {
 			// TODO revise name and functionality
-			// 
+	
 			if (HasPrefix(path)) return path;
 			if (!IsAbsolute(path)) return path;
 			return LongPath(path);
@@ -43,7 +45,7 @@
 
 		
 		public static string LongPath(string path) {
-			// TODO
+			// TODO check maxlength
 			// if(!IsAbsolute(path)) checked by NormalizePath
 			path = Path.NormalizePath(path); //removes .. and .
 			if (path.StartsWith(@"\\")) path = @"\\?\UNC\" + path.Substring(2);

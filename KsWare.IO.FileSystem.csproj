@@ -51,7 +51,7 @@
       <HintPath>packages\KsWare.IO.NamedPipes.0.1.0-CI00001\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
     </Reference>
     <Reference Include="KsWare.PrivilegedExecutor, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\KsWare.PrivilegedExecutor.0.1.0-CI00001\lib\net45\KsWare.PrivilegedExecutor.exe</HintPath>
+      <HintPath>packages\KsWare.PrivilegedExecutor.0.1.0-CI00008\lib\net45\KsWare.PrivilegedExecutor.exe</HintPath>
     </Reference>
     <Reference Include="Pri.LongPath, Version=2.0.45.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pri.LongPath.2.0.45\lib\net45\Pri.LongPath.dll</HintPath>
@@ -74,6 +74,7 @@
     <Compile Include="Internal\WinApi.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="Path.Pri.cs" />
+    <Compile Include="Path.System.cs" />
     <Compile Include="ReparsePointType.cs" />
     <Compile Include="ReparsePoint.cs" />
     <Compile Include="HardLink.cs" />
@@ -92,11 +93,11 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets" Condition="Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets')" />
+  <Import Project="packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00012\build\KsWare.NuGet.PackageBuilder.targets" Condition="Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00012\build\KsWare.NuGet.PackageBuilder.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets'))" />
+    <Error Condition="!Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00012\build\KsWare.NuGet.PackageBuilder.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00012\build\KsWare.NuGet.PackageBuilder.targets'))" />
   </Target>
 </Project>

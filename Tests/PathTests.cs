@@ -207,10 +207,10 @@ namespace KsWare.IO.FileSystem.Tests {
 			Assert.AreEqual(@"A:\D.C", ChangeFileNameWithoutExtension(@"A:\B.C", @"D"));
 		}
 
-		[TestMethod()]
+		[TestMethod]
 		public void MemberTest() {
-			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Path), typeof(Pri.LongPath.Path)));
-			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Path), typeof(System.IO.Path)));
+			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Path), typeof(Pri.LongPath.Path), "System.IO.Path."));
+			Assert.AreEqual(true, Helper.HasAllSignatures(typeof(KsWare.IO.FileSystem.Path), typeof(System.IO.Path), "System.IO.Path."));
 		}
 
 

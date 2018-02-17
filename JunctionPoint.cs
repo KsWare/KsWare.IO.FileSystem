@@ -19,29 +19,29 @@ namespace KsWare.IO.FileSystem {
 		/// <remarks>
 		///     Only works on NTFS.
 		/// </remarks>
-		/// <param name="reparsePoint">The directory to create</param>
+		/// <param name="junctionPoint">The directory to create</param>
 		/// <param name="destination">The existing directory</param>
 		/// <param name="overwrite">If true overwrites an existing reparse point or empty directory</param>
 		/// <exception cref="System.IO.IOException">
 		///     Thrown when the junction point could not be created or when
 		///     an existing directory was found and <paramref name="overwrite" /> if false
 		/// </exception>
-		public static void Create(string destination, string reparsePoint, bool overwrite) {
+		public static void Create(string junctionPoint, string destination, bool overwrite) {
 			if (destination.StartsWith(@"\\?\")) throw new ArgumentException("Volume name is not supportet!");// TODO support "mounted folder"
 
-			reparsePoint = Path.GetFullPath(reparsePoint);
+			junctionPoint = Path.GetFullPath(junctionPoint);
 			destination = Path.GetFullPath(destination);
 
 			if (!Directory.Exists(destination))
 				throw Helper.IOException($"Destination path does not exist or is not a directory.");
 
-			if (Directory.Exists(reparsePoint) && overwrite==false)
-				throw Helper.IOException($"Directory '{reparsePoint}' already exists.");
+			if (Directory.Exists(junctionPoint) && overwrite==false)
+				throw Helper.IOException($"Directory '{junctionPoint}' already exists.");
 
 			// try { Directory.Delete(reparsePoint);} catch (Exception ex) {}
-			Directory.CreateDirectory(reparsePoint);
+			Directory.CreateDirectory(junctionPoint);
 
-			using (var handle = OpenReparsePoint(reparsePoint, EFileAccess.GenericWrite)) {
+			using (var handle = OpenReparsePoint(junctionPoint, EFileAccess.GenericWrite)) {
 				var sourceDirBytes = Encoding.Unicode.GetBytes(NonInterpretedPathPrefix + destination);
 
 				var reparseDataBuffer = new REPARSE_DATA_BUFFER {
@@ -66,7 +66,7 @@ namespace KsWare.IO.FileSystem {
 					var result = DeviceIoControl(handle.DangerousGetHandle(), FSCTL_SET_REPARSE_POINT, inBuffer, sourceDirBytes.Length + 20, IntPtr.Zero, 0, out bytesReturned, IntPtr.Zero);
 
 					if (!result)
-						ThrowLastWin32Error($"Unable to create junction point '{destination}' -> '{reparsePoint}'.");
+						ThrowLastWin32Error($"Unable to create junction point '{destination}' -> '{junctionPoint}'.");
 				}
 				finally {
 					Marshal.FreeHGlobal(inBuffer);
@@ -74,10 +74,6 @@ namespace KsWare.IO.FileSystem {
 			}
 		}
 		
-		private static void CreateTest() {
-			Create(@"V:\Tests\Target", @"V:\Tests\Target Junction", true);
-			Debug.WriteLine(File.Exists(@"V:\Tests\Target Junction\Neues Textdokument.txt"));
-		}
 		/// <summary>
 		///     Deletes a junction point at the specified source directory along with the directory itself.
 		///     Does nothing if the junction point does not exist.
