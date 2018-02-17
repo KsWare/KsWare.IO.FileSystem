@@ -82,6 +82,7 @@
     <Compile Include="JunctionPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SymbolicLink.cs" />
+    <Compile Include="Volume.cs" />
     <Compile Include="VolumeMountPoint.cs" />
   </ItemGroup>
   <ItemGroup>

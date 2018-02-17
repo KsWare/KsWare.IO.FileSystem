@@ -28,10 +28,11 @@
 		public static string RemovePrefix(string path) {
 			if (path == null) return null;
 			if (path.StartsWith(@"\\?\Volume{")) return path; // keep prefix for volumes
+			if (path.StartsWith(@"\??\Volume{")) return @"\\?\" + path.Substring(4); // keep prefix for volumes
 			if (path.StartsWith(@"\\?\UNC\")) return @"\\" + path.Substring(8);
 			if (path.StartsWith(@"\\?\")) return path.Substring(4);
-			if (path.StartsWith(@"\\.\")) return path.Substring(4); // Win32 Device Namespaces
 			if (path.StartsWith(@"\??\")) return path.Substring(4);
+			if (path.StartsWith(@"\\.\")) return path.Substring(4); // Win32 Device Namespaces
 			return path;
 		}
 
@@ -53,5 +54,9 @@
 			return path;
 		}
 
+		public static bool StartsWithVolumeName(string path) {
+			if (path == null) return false;
+			return path.StartsWith(@"\\?\Volume{") || path.StartsWith(@"\??\Volume{");
+		}
 	}
 }

@@ -6,7 +6,7 @@
         <title>$title$</title>
         <authors>$author$</authors>
         <owners>$author$</owners>
-        <licenseUrl>https://github.com/KsWare/$id$/blob/mster/LICENSE</licenseUrl>
+        <licenseUrl>https://github.com/KsWare/$id$/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/KsWare/$id$</projectUrl>
         <iconUrl>https://raw.githubusercontent.com/KsWare/$id$/master/icon.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>

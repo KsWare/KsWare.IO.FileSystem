@@ -11,7 +11,7 @@ using static KsWare.IO.FileSystem.Internal.WinApi;
 
 namespace KsWare.IO.FileSystem {
 
-	public  static partial class Path {
+	public static partial class Path {
 
 		public static readonly Dictionary<char, char> SafeFileNameReplacementChars = new Dictionary<char, char>();
 

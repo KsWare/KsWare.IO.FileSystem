@@ -27,82 +27,81 @@ namespace KsWare.IO.FileSystem {
 		///     Thrown when the junction point could not be created or when
 		///     an existing directory was found and <paramref name="overwrite" /> if false
 		/// </exception>
-		public static void CreateMointpoint(string directory, string target, bool overwrite) {
-			target = Path.GetFullPath(target);
+		public static void CreateMountpoint(string directory, string target, bool overwrite) =>
+			JunctionPoint.Create(directory, target, overwrite);
 
-			if (!Directory.Exists(target)) throw new IOException($"Source path does not exist or is not a directory.");
-
-			if (Directory.Exists(directory)) throw new IOException($"Directory '{directory}' already exists.");
-
-			Directory.CreateDirectory(directory);
-
-			using (var handle = OpenReparsePoint(directory, EFileAccess.GenericWrite)) {
-				var sourceDirBytes = Encoding.Unicode.GetBytes(NonInterpretedPathPrefix + Path.GetFullPath(target));
-
-				var reparseDataBuffer = new REPARSE_DATA_BUFFER_MountPointReparseBuffer();
-
-				reparseDataBuffer.ReparseTag           = IO_REPARSE_TAG_MOUNT_POINT;
-				reparseDataBuffer.ReparseDataLength    = (ushort) (sourceDirBytes.Length + 12);
-				reparseDataBuffer.SubstituteNameOffset = 0;
-				reparseDataBuffer.SubstituteNameLength = (ushort) sourceDirBytes.Length;
-				reparseDataBuffer.PrintNameOffset      = (ushort) (sourceDirBytes.Length + 2);
-				reparseDataBuffer.PrintNameLength      = 0;
-				reparseDataBuffer.PathBuffer           = new byte[0x3ff0];
-				Array.Copy(sourceDirBytes, reparseDataBuffer.PathBuffer, sourceDirBytes.Length);
-
-				var inBufferSize = Marshal.SizeOf(reparseDataBuffer);
-				var inBuffer     = Marshal.AllocHGlobal(inBufferSize);
-
-				try {
-					Marshal.StructureToPtr(reparseDataBuffer, inBuffer, false);
-
-					int bytesReturned;
-					var result = DeviceIoControl(handle.DangerousGetHandle(), FSCTL_SET_REPARSE_POINT, inBuffer,
-						sourceDirBytes.Length + 20,                              IntPtr.Zero,             0, out bytesReturned,
-						IntPtr.Zero);
-
-					if (!result)
-						throw Helper.IOExceptionForLastWin32Error($"Unable to create junction point '{directory}' -> '{target}'.");
-				}
-				finally {
-					Marshal.FreeHGlobal(inBuffer);
-				}
-			}
-		}
+		//		/// <summary>
+		//		///     Creates a junction point to the specified target directory.
+		//		/// </summary>
+		//		/// <remarks>
+		//		///     Only works on NTFS.
+		//		/// </remarks>
+		//		/// <param name="directory">The directory to create.</param>
+		//		/// <param name="target">The target directory.</param>
+		//		/// <param name="overwrite">If true overwrites an existing reparse point or empty directory.</param>
+		//		/// <exception cref="Helper.IOExceptionForLastWin32Error">
+		//		///     Thrown when the junction point could not be created or when
+		//		///     an existing directory was found and <paramref name="overwrite" /> if false
+		//		/// </exception>
+		//		public static void CreateMointpoint(string directory, string target, bool overwrite) {
+		//			target = Path.GetFullPath(target);
+		//
+		//			if (!Directory.Exists(target)) throw new IOException($"Source path does not exist or is not a directory.");
+		//
+		//			if (Directory.Exists(directory)) throw new IOException($"Directory '{directory}' already exists.");
+		//
+		//			Directory.CreateDirectory(directory);
+		//
+		//			using (var handle = OpenReparsePoint(directory, EFileAccess.GenericWrite)) {
+		//				var sourceDirBytes = Encoding.Unicode.GetBytes(NonInterpretedPathPrefix + Path.GetFullPath(target));
+		//
+		//				var reparseDataBuffer = new REPARSE_DATA_BUFFER_MountPointReparseBuffer();
+		//
+		//				reparseDataBuffer.ReparseTag           = IO_REPARSE_TAG_MOUNT_POINT;
+		//				reparseDataBuffer.ReparseDataLength    = (ushort) (sourceDirBytes.Length + 12);
+		//				reparseDataBuffer.SubstituteNameOffset = 0;
+		//				reparseDataBuffer.SubstituteNameLength = (ushort) sourceDirBytes.Length;
+		//				reparseDataBuffer.PrintNameOffset      = (ushort) (sourceDirBytes.Length + 2);
+		//				reparseDataBuffer.PrintNameLength      = 0;
+		//				reparseDataBuffer.PathBuffer           = new byte[0x3ff0];
+		//				Array.Copy(sourceDirBytes, reparseDataBuffer.PathBuffer, sourceDirBytes.Length);
+		//
+		//				var inBufferSize = Marshal.SizeOf(reparseDataBuffer);
+		//				var inBuffer     = Marshal.AllocHGlobal(inBufferSize);
+		//
+		//				try {
+		//					Marshal.StructureToPtr(reparseDataBuffer, inBuffer, false);
+		//
+		//					int bytesReturned;
+		//					var result = DeviceIoControl(handle.DangerousGetHandle(), FSCTL_SET_REPARSE_POINT, inBuffer,
+		//						sourceDirBytes.Length + 20,                              IntPtr.Zero,             0, out bytesReturned,
+		//						IntPtr.Zero);
+		//
+		//					if (!result)
+		//						throw Helper.IOExceptionForLastWin32Error($"Unable to create junction point '{directory}' -> '{target}'.");
+		//				}
+		//				finally {
+		//					Marshal.FreeHGlobal(inBuffer);
+		//				}
+		//			}
+		//		}
 
 		/// <summary>
-		///     Creates a symbolic link to the specified target directory.
+		///     Creates a symbolic link to the specified target.
 		/// </summary>
 		/// <remarks>
 		///     Only works on NTFS.
 		/// </remarks>
-		/// <param name="directory">The directory to create.</param>
-		/// <param name="target">The target directory.</param>
+		/// <param name="file">The file/directory to create.</param>
+		/// <param name="target">The target file/direcory.</param>
 		/// <param name="overwrite">If true overwrites an existing reparse point or empty directory.</param>
 		/// <exception cref="Helper.IOExceptionForLastWin32Error">
 		///     Thrown when the junction point could not be created or when
-		///     an existing directory was found and <paramref name="overwrite" /> if false
+		///     an existing file/directory was found and <paramref name="overwrite" /> if false
 		/// </exception>
-		public static void CreateSymbolicLinkDirectory(string directory, string target, bool overwrite) {
-			SymbolicLink.Create(directory, target, overwrite);
-		}
-
-		/// <summary>
-		///     Creates a symbolic link from the specified file to the specified target file.
-		/// </summary>
-		/// <remarks>
-		///     Only works on NTFS.
-		/// </remarks>
-		/// <param name="file">The file to create.</param>
-		/// <param name="target">The target file.</param>
-		/// <param name="overwrite">If true overwrites an existing reparse point or empty directory.</param>
-		/// <exception cref="Helper.IOExceptionForLastWin32Error">
-		///     Thrown when the junction point could not be created or when
-		///     an existing directory was found and <paramref name="overwrite" /> if false
-		/// </exception>
-		public static void CreateSymbolicLinkFile(string file, string target, bool overwrite) {
+		public static void CreateSymbolicLink(string file, string target, bool overwrite) =>
 			SymbolicLink.Create(file, target, overwrite);
-		}
+		
 
 
 		//		/// <summary>
@@ -231,66 +230,101 @@ namespace KsWare.IO.FileSystem {
 		//			}
 		//		}
 
+//		/// <summary>
+//		///     Deletes a junction point at the specified source directory along with the directory itself.
+//		///     Does nothing if the junction point does not exist.
+//		/// </summary>
+//		/// <remarks>
+//		///     Only works on NTFS.
+//		/// </remarks>
+//		/// <param name="junctionPoint">The junction point path</param>
+//		public static void DeleteMountpoint(string junctionPoint) {
+//			if (!Directory.Exists(junctionPoint)) {
+//				if (File.Exists(junctionPoint)) throw new IOException("Path is not a junction point.");
+//				return;
+//			}
+//
+//			using (var handle = OpenReparsePoint(junctionPoint, EFileAccess.GenericWrite)) {
+//				var reparseDataBuffer = new REPARSE_DATA_BUFFER_MountPointReparseBuffer();
+//
+//				reparseDataBuffer.ReparseTag        = IO_REPARSE_TAG_MOUNT_POINT;
+//				reparseDataBuffer.ReparseDataLength = 0;
+//				reparseDataBuffer.PathBuffer        = new byte[0x3ff0];
+//
+//				var inBufferSize = Marshal.SizeOf(reparseDataBuffer);
+//				var inBuffer     = Marshal.AllocHGlobal(inBufferSize);
+//				try {
+//					Marshal.StructureToPtr(reparseDataBuffer, inBuffer, false);
+//
+//					int bytesReturned;
+//					var result = DeviceIoControl(handle.DangerousGetHandle(), FSCTL_DELETE_REPARSE_POINT, inBuffer, 8, IntPtr.Zero, 0,
+//						out bytesReturned,                                       IntPtr.Zero);
+//
+//					if (!result) throw Helper.IOExceptionForLastWin32Error("Unable to delete junction point.");
+//				}
+//				finally {
+//					Marshal.FreeHGlobal(inBuffer);
+//				}
+//
+//				try {
+//					Directory.Delete(junctionPoint);
+//				}
+//				catch (IOException ex) {
+//					throw new IOException("Unable to delete junction point.", ex);
+//				}
+//			}
+//		}
+
 		/// <summary>
-		///     Deletes a junction point at the specified source directory along with the directory itself.
-		///     Does nothing if the junction point does not exist.
-		/// </summary>
-		/// <remarks>
-		///     Only works on NTFS.
-		/// </remarks>
-		/// <param name="junctionPoint">The junction point path</param>
-		public static void DeleteMountpoint(string junctionPoint) {
-			if (!Directory.Exists(junctionPoint)) {
-				if (File.Exists(junctionPoint)) throw new IOException("Path is not a junction point.");
-				return;
-			}
-
-			using (var handle = OpenReparsePoint(junctionPoint, EFileAccess.GenericWrite)) {
-				var reparseDataBuffer = new REPARSE_DATA_BUFFER_MountPointReparseBuffer();
-
-				reparseDataBuffer.ReparseTag        = IO_REPARSE_TAG_MOUNT_POINT;
-				reparseDataBuffer.ReparseDataLength = 0;
-				reparseDataBuffer.PathBuffer        = new byte[0x3ff0];
-
-				var inBufferSize = Marshal.SizeOf(reparseDataBuffer);
-				var inBuffer     = Marshal.AllocHGlobal(inBufferSize);
-				try {
-					Marshal.StructureToPtr(reparseDataBuffer, inBuffer, false);
-
-					int bytesReturned;
-					var result = DeviceIoControl(handle.DangerousGetHandle(), FSCTL_DELETE_REPARSE_POINT, inBuffer, 8, IntPtr.Zero, 0,
-						out bytesReturned,                                       IntPtr.Zero);
-
-					if (!result) throw Helper.IOExceptionForLastWin32Error("Unable to delete junction point.");
-				}
-				finally {
-					Marshal.FreeHGlobal(inBuffer);
-				}
-
-				try {
-					Directory.Delete(junctionPoint);
-				}
-				catch (IOException ex) {
-					throw new IOException("Unable to delete junction point.", ex);
-				}
-			}
-		}
-
-		/// <summary>
-		///     Determines whether the specified path exists and refers to a junction point.
+		///     Determines whether the specified path exists and refers to a reparse point.
 		/// </summary>
 		/// <param name="path">The junction point path</param>
 		/// <returns>True if the specified path represents a junction point</returns>
-		/// <exception cref="Helper.IOExceptionForLastWin32Error">
-		///     Thrown if the specified path is invalid
-		///     or some other error occurs
-		/// </exception>
 		public static bool Exists(string path) {
-			if (!Directory.Exists(path)) return false;
+			if (!Directory.Exists(path) && !File.Exists(path)) return false;
 
 			using (var handle = OpenReparsePoint(path, EFileAccess.GenericRead)) {
 				var data = GetReparseData(handle, true);
 				return data != null;
+			}
+		}
+
+		/// <summary>
+		///     Determines whether the specified raparse point refers to a existing target.
+		/// </summary>
+		/// <param name="reparsePoint">The raparse point path</param>
+		/// <param name="throwException">if true; throws exception if the <paramref name="reparsePoint"/> is invalid.</param>
+		/// <returns>True if the target exists; else false.</returns>
+		public static bool TargetExists(string reparsePoint, bool throwException=false) {
+			var directoryExists = Directory.Exists(reparsePoint);
+			var fileExists = File.Exists(reparsePoint);
+			if (!directoryExists && !fileExists) {
+				if(throwException) throw new ArgumentException("Reparse point not exists.",nameof(reparsePoint));
+				return false; 
+			}
+
+			using (var handle = OpenReparsePoint(reparsePoint, EFileAccess.GenericRead)) {
+				var data = GetReparseData(handle, true);
+				if (data == null) {
+					if (throwException) throw new ArgumentException("Path is not a valid reparse point.", nameof(reparsePoint));
+					return false;
+				}
+				var target = data.SubstituteName;
+				switch (data.Type) {
+					case ReparsePointType.VolumeMountPoint: return Volume.Exists(target);
+					case ReparsePointType.MountPoint:
+						target = PathHelper.RemovePrefix(target); // "\\??\\Y:\\ReadTests\\Original"
+						return Directory.Exists(target);
+					case ReparsePointType.SymbolicLink:
+						if (data.Flags.Value == SYMLINK_FLAG.RELATIVE) {
+							var anchor = Path.GetDirectoryName(reparsePoint);
+							target = Path.MakeAbsolute(target, anchor);
+						}
+						if (directoryExists) return Directory.Exists(target);
+						if (fileExists) return File.Exists(target);
+						return false;
+					default: throw new ArgumentException("Unknown reparse point type.");
+				}
 			}
 		}
 
@@ -439,10 +473,7 @@ namespace KsWare.IO.FileSystem {
 					break;
 				}
 				case IO_REPARSE_TAG.SYMLINK: {
-					if((attr & FILE_ATTRIBUTE.DIRECTORY) !=0)
-						data.Type = ReparsePointType.SymbolicDirectoryLink;
-					else
-						data.Type = ReparsePointType.SymbolicFileLink;
+					data.Type = ReparsePointType.SymbolicLink;
 					break;
 				}
 				default:
@@ -483,13 +514,18 @@ namespace KsWare.IO.FileSystem {
 							(REPARSE_DATA_BUFFER_MountPointReparseBuffer) Marshal.PtrToStructure(outBuffer,
 								typeof(REPARSE_DATA_BUFFER_MountPointReparseBuffer));
 						if (reparseDataBuffer.SubstituteNameLength > 0) {
-							managed.SubstituteName = Encoding.Unicode.GetString(reparseDataBuffer.PathBuffer,
+							managed.SubstituteNameOriginal = Encoding.Unicode.GetString(reparseDataBuffer.PathBuffer,
 								reparseDataBuffer.SubstituteNameOffset, reparseDataBuffer.SubstituteNameLength);
 						}
 						if (reparseDataBuffer.PrintNameLength > 0) {
-							managed.PrintName = Encoding.Unicode.GetString(reparseDataBuffer.PathBuffer, reparseDataBuffer.PrintNameOffset,
+							managed.PrintNameOriginal = Encoding.Unicode.GetString(reparseDataBuffer.PathBuffer, reparseDataBuffer.PrintNameOffset,
 								reparseDataBuffer.PrintNameLength);
 						}
+						managed.SubstituteName = PathHelper.RemovePrefix(managed.SubstituteNameOriginal);
+						managed.PrintName = PathHelper.RemovePrefix(managed.PrintNameOriginal);
+						managed.Type = PathHelper.StartsWithVolumeName(managed.SubstituteName)
+							? ReparsePointType.VolumeMountPoint
+							: ReparsePointType.MountPoint;
 						break;
 					}
 					case IO_REPARSE_TAG.SYMLINK: {
@@ -505,12 +541,14 @@ namespace KsWare.IO.FileSystem {
 								reparseDataBuffer.PrintNameLength);
 						}
 						managed.Flags = (SYMLINK_FLAG) Marshal.ReadInt32(outBuffer, 16);
+						managed.Type = ReparsePointType.SymbolicLink;
 						break;
 					}
 					default: {
 						var reparseDataLength = Marshal.ReadInt32(outBuffer, 4); // read ReparseDataLength
 						managed.Generic       = new byte[reparseDataLength];
 						Marshal.Copy(new IntPtr(outBuffer.ToInt64() + 8), managed.Generic, 0, reparseDataLength);
+						managed.Type=ReparsePointType.Other;
 						break;
 					}
 				}
