@@ -6,13 +6,13 @@
         <title>$title$</title>
         <authors>$author$</authors>
         <owners>$author$</owners>
-        <licenseUrl>https://github.com/KsWare/$id$/licence</licenseUrl>
+        <licenseUrl>https://github.com/KsWare/$id$/blob/mster/LICENSE</licenseUrl>
         <projectUrl>https://github.com/KsWare/$id$</projectUrl>
-        <iconUrl>https://github.com/KsWare/$id$/icon.ico</iconUrl>
+        <iconUrl>https://raw.githubusercontent.com/KsWare/$id$/master/icon.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>$description$</description>
 		<developmentDependency>false</developmentDependency>
-        <releaseNotes></releaseNotes>
+        <releaseNotes>https://raw.githubusercontent.com/KsWare/$id$/master/ReleaseNotes.md</releaseNotes>
         <copyright>Copyright 2018 by KsWare. All rights reserved.</copyright>
 		<tags>.net file-system NTFS shared KsWare</tags>
 	</metadata>
