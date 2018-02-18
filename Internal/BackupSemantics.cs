@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+
 
 namespace KsWare.IO.FileSystem.Internal {
 
@@ -530,27 +530,7 @@ http://msdn.microsoft.com/en-us/library/aa363839(VS.85).aspx
 			OpenNoRecall = 0x00100000,
 			FirstPipeInstance = 0x00080000
 		}
-
-		[StructLayout(LayoutKind.Sequential, Pack = 4)]
-		public struct BY_HANDLE_FILE_INFORMATION {
-			public uint FileAttributes;
-			public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
-			public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
-			public FILETIME LastWriteTime;
-			public uint VolumeSerialNumber;
-			public uint FileSizeHigh;
-			public uint FileSizeLow;
-			public uint NumberOfLinks;
-			public uint FileIndexHigh;
-			public uint FileIndexLow;
-		}
-
-		[DllImport("kernel32.dll", SetLastError = true)]
-		public static extern bool GetFileInformationByHandle(
-			SafeFileHandle hFile,
-			out BY_HANDLE_FILE_INFORMATION lpFileInformation
-		);
-
+		
 		public enum FILE_INFO_BY_HANDLE_CLASS : int {
 			FileBasicInfo = 0,
 			FileStandardInfo = 1,

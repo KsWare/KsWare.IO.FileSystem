@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using KsWare.IO.FileSystem.Internal;
 using Microsoft.Win32.SafeHandles;
+using static KsWare.IO.FileSystem.Internal.FileManagementApi;
+using static KsWare.IO.FileSystem.Internal.PathHelper;
 
 namespace KsWare.IO.FileSystem {
 
@@ -14,7 +16,7 @@ namespace KsWare.IO.FileSystem {
 	public static partial class JunctionPoint {
 
 		/// <summary>
-		///     Creates a junction point from the specified directory to the specified target directory.
+		///     Creates a junction point to the specified target directory.
 		/// </summary>
 		/// <remarks>
 		///     Only works on NTFS.
@@ -27,7 +29,7 @@ namespace KsWare.IO.FileSystem {
 		///     an existing directory was found and <paramref name="overwrite" /> if false
 		/// </exception>
 		public static void Create(string junctionPoint, string destination, bool overwrite) {
-			if (destination.StartsWith(@"\\?\")) throw new ArgumentException("Volume name is not supportet!");// TODO support "mounted folder"
+			if (destination.StartsWith(@"\\?\Volume{")) throw new ArgumentException("Volume name is not supported!");// TODO support "mounted folder"
 
 			junctionPoint = Path.GetFullPath(junctionPoint);
 			destination = Path.GetFullPath(destination);
@@ -219,8 +221,6 @@ namespace KsWare.IO.FileSystem {
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern bool DeviceIoControl(IntPtr hDevice, uint dwIoControlCode, IntPtr InBuffer, int nInBufferSize, IntPtr OutBuffer, int nOutBufferSize, out int pBytesReturned, IntPtr lpOverlapped);
 
-		[DllImport("kernel32.dll", SetLastError = true)]
-		private static extern IntPtr CreateFile(string lpFileName, EFileAccess dwDesiredAccess, EFileShare dwShareMode, IntPtr lpSecurityAttributes, ECreationDisposition dwCreationDisposition, EFileAttributes dwFlagsAndAttributes, IntPtr hTemplateFile);
 
 		private static string InternalGetTarget(SafeFileHandle handle) {
 			var outBufferSize = Marshal.SizeOf(typeof(REPARSE_DATA_BUFFER));
@@ -256,8 +256,7 @@ namespace KsWare.IO.FileSystem {
 		}
 
 		private static SafeFileHandle OpenReparsePoint(string reparsePoint, EFileAccess accessMode) {
-			var reparsePointHandle = new SafeFileHandle(CreateFile(reparsePoint, accessMode, EFileShare.Read | EFileShare.Write | EFileShare.Delete, IntPtr.Zero, ECreationDisposition.OpenExisting, EFileAttributes.BackupSemantics | EFileAttributes.OpenReparsePoint, IntPtr.Zero), true);
-
+			var reparsePointHandle = CreateFile(LongPathSupport(reparsePoint), accessMode, EFileShare.Read | EFileShare.Write | EFileShare.Delete, IntPtr.Zero, ECreationDisposition.OpenExisting, EFileAttributes.BackupSemantics | EFileAttributes.OpenReparsePoint, IntPtr.Zero);
 			if (Marshal.GetLastWin32Error() != 0)
 				ThrowLastWin32Error("Unable to open reparse point.");
 
@@ -266,66 +265,7 @@ namespace KsWare.IO.FileSystem {
 
 		private static void ThrowLastWin32Error(string message) { throw new IOException(message, Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error())); }
 
-		[Flags]
-		private enum EFileAccess : uint {
 
-			GenericRead = 0x80000000,
-			GenericWrite = 0x40000000,
-			GenericExecute = 0x20000000,
-			GenericAll = 0x10000000
-
-		}
-
-		[Flags]
-		private enum EFileShare : uint {
-
-			None = 0x00000000,
-			Read = 0x00000001,
-			Write = 0x00000002,
-			Delete = 0x00000004
-
-		}
-
-		private enum ECreationDisposition : uint {
-
-			New = 1,
-			CreateAlways = 2,
-			OpenExisting = 3,
-			OpenAlways = 4,
-			TruncateExisting = 5
-
-		}
-
-		[Flags]
-		private enum EFileAttributes : uint {
-
-			Readonly = 0x00000001,
-			Hidden = 0x00000002,
-			System = 0x00000004,
-			Directory = 0x00000010,
-			Archive = 0x00000020,
-			Device = 0x00000040,
-			Normal = 0x00000080,
-			Temporary = 0x00000100,
-			SparseFile = 0x00000200,
-			ReparsePoint = 0x00000400,
-			Compressed = 0x00000800,
-			Offline = 0x00001000,
-			NotContentIndexed = 0x00002000,
-			Encrypted = 0x00004000,
-			WriteThrough = 0x80000000,
-			Overlapped = 0x40000000,
-			NoBuffering = 0x20000000,
-			RandomAccess = 0x10000000,
-			SequentialScan = 0x08000000,
-			DeleteOnClose = 0x04000000,
-			BackupSemantics = 0x02000000,
-			PosixSemantics = 0x01000000,
-			OpenReparsePoint = 0x00200000,
-			OpenNoRecall = 0x00100000,
-			FirstPipeInstance = 0x00080000
-
-		}
 
 		[StructLayout(LayoutKind.Sequential)]
 		private struct REPARSE_DATA_BUFFER {

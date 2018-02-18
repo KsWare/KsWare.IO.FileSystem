@@ -12,14 +12,13 @@ namespace KsWare.IO.FileSystem.Tests {
 	[TestClass]
 	public class HardLinkTests {
 		private Fixture _fixture;
-		private const string TestDrive = @"Y:\";
 
 		[TestMethod]
 		public void CreateTest() {
-			Helper.DemandTestDriveAvailable(TestDrive);
+			Helper.DemandTestDriveAvailable(TestDrive.Root);
 			//Helper.DemandElevated();
 
-			var testFolder = Helper.GetTestFolder(TestDrive, "WriteTests", this);
+			var testFolder = Helper.GetTestFolder(TestDrive.Root, "WriteTests", this);
 			_fixture =new Fixture(()=>Directory.Delete(testFolder,true));
 
 			Directory.CreateDirectory(testFolder);
@@ -27,10 +26,69 @@ namespace KsWare.IO.FileSystem.Tests {
 			File.WriteAllText(originalFile,"Original");
 
 			var hardLink = Path.Combine(testFolder, "hardlink.txt");
+			var c0 = HardLink.GetNumberOfLinks(originalFile);
 			HardLink.Create(hardLink, originalFile);
+			var c1 = HardLink.GetNumberOfLinks(hardLink);
 
 			Assert.AreEqual("Original", File.ReadAllText(hardLink));
+			Assert.AreEqual(c0+1,c1);
 		}
+
+		[TestMethod]
+		public void CreateLongTest() {
+			Helper.DemandTestDriveAvailable(TestDrive.Root);
+			//Helper.DemandElevated();
+
+			var testFolder = TestDrive.WriteTests.LongPath.CreateTestFolder(this);
+			_fixture = new Fixture(() => Directory.Delete(testFolder, true));
+
+			var originalFile = Path.Combine(testFolder, "Original.txt");
+			File.WriteAllText(originalFile, "Original");
+
+			var hardLink = Path.Combine(testFolder, "HardLink.txt");
+			HardLink.Create(hardLink, originalFile);
+
+			Assert.AreEqual(TestDrive.ReadTests.OriginalTxt.Content, File.ReadAllText(hardLink));
+		}
+
+		[TestMethod]
+		public void CreateLongTargetTest() {
+			Helper.DemandTestDriveAvailable(TestDrive.Root);
+			//Helper.DemandElevated();
+
+			var testFolder = TestDrive.WriteTests.CreateTestFolder(this);
+			_fixture = new Fixture(() => Directory.Delete(testFolder, true));
+
+			var originalFile = TestDrive.ReadTests.LongPath.OriginalTxt.FullName;
+			File.WriteAllText(originalFile, "Original");
+
+			var hardLink = Path.Combine(testFolder, "HardLink.txt");
+			HardLink.Create(hardLink, originalFile);
+
+			Assert.AreEqual(TestDrive.ReadTests.LongPath.OriginalTxt.Content, File.ReadAllText(hardLink));
+		}
+
+		private void CreateUncheckedTest(int length,[CallerMemberName] string callerName=null) {
+			Helper.DemandTestDriveAvailable(TestDrive.Root);
+			//Helper.DemandElevated();
+
+			var testFolder = TestDrive.WriteTests.CreateTestFolder(this, callerName);
+			_fixture = new Fixture(() => Directory.Delete(testFolder, true));
+
+			var longPathFile = Path.Combine(testFolder, new string('!', length - testFolder.Length -1 - 4))+".txt";
+			Assert.AreEqual(length,longPathFile.Length);
+			var originalFile = TestDrive.ReadTests.OriginalTxt.FullName;
+
+			HardLink.Create(longPathFile, originalFile);
+			Assert.AreEqual(TestDrive.ReadTests.OriginalTxt.Content, File.ReadAllText(longPathFile));
+		}
+
+		[TestMethod]
+		public void CreateUnchecked259Test() => CreateUncheckedTest(259);
+
+		[TestMethod]
+		public void CreateUnchecked260Test() => CreateUncheckedTest(260);
+
 
 		[TestMethod]
 		public void DeleteTest() {
@@ -57,7 +115,7 @@ namespace KsWare.IO.FileSystem.Tests {
 		}
 
 		private string PrepareHardLink(object testClass, [CallerMemberName] string testMethod = null) {
-			var testFolder = Helper.GetTestFolder(TestDrive, "WriteTests", testClass, testMethod);
+			var testFolder = Helper.GetTestFolder(TestDrive.Root, "WriteTests", testClass, testMethod);
 			_fixture = new Fixture(() => Directory.Delete(testFolder, true));
 
 			Directory.CreateDirectory(testFolder);

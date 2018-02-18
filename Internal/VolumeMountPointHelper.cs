@@ -13,7 +13,7 @@ namespace KsWare.IO.FileSystem.Internal {
 		// Retrieves a volume GUID path for the volume that is associated with the specified volume mount point ( drive letter, volume GUID path, or mounted folder).
 		// https://msdn.microsoft.com/de-de/library/windows/desktop/aa364994(v=vs.85).aspx
 		[DllImport("kernel32.dll", SetLastError = true)]
-		internal static extern bool GetVolumeNameForVolumeMountPoint(string lpszVolumeMountPoint, [Out] StringBuilder lpszVolumeName, uint cchBufferLength);
+		internal static extern bool GetVolumeNameForVolumeMountPoint(string lpszVolumeMountPoint, [Out] StringBuilder lpszVolumeName, int cchBufferLength);
 
 		[DllImport("kernel32.dll", SetLastError = true)]
 		internal static extern bool SetVolumeMountPoint(string lpszVolumeMountPoint, string lpszVolumeName);

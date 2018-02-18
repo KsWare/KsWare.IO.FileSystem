@@ -67,6 +67,8 @@
     <Compile Include="File.Pri.cs" />
     <Compile Include="FileInfo.cs" />
     <Compile Include="Internal\BackupSemantics.cs" />
+    <Compile Include="Internal\BY_HANDLE_FILE_INFORMATION.cs" />
+    <Compile Include="Internal\FileManagementApi.cs" />
     <Compile Include="Internal\FILE_ATTRIBUTE.cs" />
     <Compile Include="Internal\PathHelper.cs" />
     <Compile Include="Internal\ReparseData.cs" />

@@ -10,6 +10,8 @@ namespace KsWare.IO.FileSystem.Internal {
 
 	public static class WinApi {
 
+		public const int MAX_PATH = 260; // but is 256!?
+
 		/// <summary>
 		/// If the <see cref="GetFileAttributes"/> function fails, the return value is INVALID_FILE_ATTRIBUTES. To get extended error information, call <see cref="Marshal.GetLastWin32Error"/>.
 		/// </summary>

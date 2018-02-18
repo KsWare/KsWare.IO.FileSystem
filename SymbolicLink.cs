@@ -8,6 +8,8 @@ using System.Text;
 using KsWare.IO.FileSystem.Internal;
 using KsWare.PrivilegedExecutor;
 using Microsoft.Win32.SafeHandles;
+using static KsWare.IO.FileSystem.Internal.PathHelper;
+using static KsWare.IO.FileSystem.Internal.FileManagementApi;
 
 namespace KsWare.IO.FileSystem {
 
@@ -28,15 +30,17 @@ namespace KsWare.IO.FileSystem {
 
 			if (Directory.Exists(target)) flags=SYMBOLIC_LINK_FLAG_DIRECTORY;
 			else if (File.Exists(target)) flags = 0;
-			else throw Helper.IOException("Target not found");
+			else throw Helper.IOException("Target not found. ");
 
 			int result;
 			if (!Helper.IsElevated) {
 				result = PrivilegedExecutor.Client.Execute(
-					typeof(SymbolicLink), nameof(CreateSymbolicLinkConsole), path, target, flags.ToString(CultureInfo.InvariantCulture));
+					typeof(SymbolicLink), nameof(CreateSymbolicLinkConsole), 
+					LongPathSupport(path), LongPathSupport(target), 
+					flags.ToString(CultureInfo.InvariantCulture));
 			}
 			else {
-				result = CreateSymbolicLinkFix(path, target1, flags);
+				result = CreateSymbolicLink(LongPathSupport(path), LongPathSupport(target), flags);
 			}
 			if (result != 0 && Enum.IsDefined(typeof(PrivilegedExecutor.ExitCode), result))
 				throw Helper.IOException($"Unable to create symbolic link '{path}' -> '{target}'.",
@@ -48,20 +52,11 @@ namespace KsWare.IO.FileSystem {
 		}
 
 		internal static int CreateSymbolicLinkConsole(string lpSymlinkFileName,string lpTargetFileName,string dwFlags) { 
-			return CreateSymbolicLinkFix(lpSymlinkFileName, lpTargetFileName, int.Parse(dwFlags));
-		}
-
-		private static int CreateSymbolicLinkFix(string lpSymlinkFileName, string lpTargetFileName, int dwFlags) {
-			var result = CreateSymbolicLink(lpSymlinkFileName, lpTargetFileName, dwFlags);
-			// WORKAROUND result == 1 SUCCESS, != 1 FAIL 
-			// in Win10 CreateSymbolicLink returns NOT 0 on failure, it returns a (negative) number
-			// TEST:  result == 1 the symbolic link was created successfully.
-			if (result == 1) return 0;
-			return Marshal.GetLastWin32Error();
+			return CreateSymbolicLink(lpSymlinkFileName, lpTargetFileName, int.Parse(dwFlags));
 		}
 
 		/// <summary>
-		/// Deleted a symbolic link
+		/// Delete a symbolic link
 		/// </summary>
 		/// <param name="path">The symbolic link path.</param>
 		public static void Delete(string path) {
@@ -76,23 +71,16 @@ namespace KsWare.IO.FileSystem {
 		/// <returns>Der wahre Pfad von <paramref name="path"/>.</returns>
 		/// <remarks>Sollte kein Laufwerkpfad für den NTFS-Ordner verfügbar sein, so wird der Bereitstellungspfad zurück gegeben.</remarks>
 		public static string GetTarget(string path) {
-			if (!Directory.Exists(path) && !File.Exists(path))
-				throw new IOException("Path not found");
+			if (!Directory.Exists(path) && !File.Exists(path)) throw new IOException("Path not found.");
 
-			var symlink = PathHelper.LongPathSupport(Path.GetFullPath(path));
-			using (var directoryHandle = CreateFile(symlink, 0, 2, System.IntPtr.Zero, CREATION_DISPOSITION_OPEN_EXISTING,
-				FILE_FLAG_BACKUP_SEMANTICS,                  System.IntPtr.Zero)) {
-				if (directoryHandle.IsInvalid)
-					throw new Win32Exception(Marshal.GetLastWin32Error());
+			using (var directoryHandle = CreateFile(LongPathSupport(path), 0, 2, NULL, CREATION_DISPOSITION_OPEN_EXISTING,
+				FILE_FLAG_BACKUP_SEMANTICS, NULL)) {
+				if (directoryHandle.IsInvalid) throw Helper.ExceptionForLastWin32Error();
 
 				var result = new StringBuilder(512);
 				int mResult = GetFinalPathNameByHandle(directoryHandle.DangerousGetHandle(), result, result.Capacity, 0);
-				if (mResult < 0)
-					throw new Win32Exception(Marshal.GetLastWin32Error());
-				if (result.Length >= 4 && result[0] == '\\' && result[1] == '\\' && result[2] == '?' && result[3] == '\\')
-					return result.ToString().Substring(4);// "\\?\" entfernen
-				else
-					return result.ToString();
+				if (mResult < 0) throw Helper.ExceptionForLastWin32Error();
+				return RemovePrefix(result.ToString());
 			}
 		}
 
@@ -110,24 +98,34 @@ namespace KsWare.IO.FileSystem {
 		/// </summary>
 		private const int SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE = 0x2;
 
-		private const int CREATION_DISPOSITION_OPEN_EXISTING = 3;
-
-		private const int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
-
 		// https://msdn.microsoft.com/de-de/library/windows/desktop/aa363866(v=vs.85).aspx
 		// Minimum supported client: Windows Vista[desktop apps only]
 		// Minimum supported server: Windows Server 2008 [desktop apps only]
-//		[DllImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
-//		private static extern bool CreateSymbolicLink(
-//			[In] string lpSymlinkFileName,
-//			[In] string lpTargetFileName,
-//			[In] int dwFlags);
+		//		[DllImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
+		//		private static extern bool CreateSymbolicLink(
+		//			[In] string lpSymlinkFileName,
+		//			[In] string lpTargetFileName,
+		//			[In] int dwFlags);
 
+
+		/// <summary>  Use <seealso cref="CreateSymbolicLink"/> </summary>
+		[Obsolete("Fix required!")]
 		[DllImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
-		private static extern int CreateSymbolicLink(
+		private static extern int CreateSymbolicLink_CALL_REQUIRES_FIX(
 			[In] string lpSymlinkFileName,
 			[In] string lpTargetFileName,
 			[In] int dwFlags);
+
+		private static int CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, int dwFlags) {
+#pragma warning disable 618 // suppresion is OK here. Fix implemented.
+			var result = CreateSymbolicLink_CALL_REQUIRES_FIX(lpSymlinkFileName, lpTargetFileName, dwFlags);
+			// WORKAROUND result == 1 SUCCESS, != 1 FAIL 
+			// in Win10 CreateSymbolicLink returns NOT 0 on failure, it returns a (negative) number
+			// TEST:  result == 1 the symbolic link was created successfully.
+			if (result == 1) return 0;
+			return Marshal.GetLastWin32Error();
+#pragma warning restore 618
+		}
 
 		[DllImport("kernel32.dll", EntryPoint = "GetFinalPathNameByHandleW", CharSet = CharSet.Unicode, SetLastError = true)]
 		private static extern int GetFinalPathNameByHandle([In] IntPtr hFile,
@@ -135,18 +133,8 @@ namespace KsWare.IO.FileSystem {
 			[In] int cchFilePath,
 			[In] int dwFlags);
 
-		[DllImport("kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
-		private static extern SafeFileHandle CreateFile(string lpFileName,
-			int dwDesiredAccess,
-			int dwShareMode,
-			IntPtr securityAttributes,
-			int dwCreationDisposition,
-			int dwFlagsAndAttributes,
-			IntPtr hTemplateFile);
-
-
-
 		#endregion
+
 	}
 
 }

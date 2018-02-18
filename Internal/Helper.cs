@@ -51,6 +51,11 @@ namespace KsWare.IO.FileSystem.Internal {
 			return new System.IO.IOException(message, Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()));
 		}
 
+		public static Exception ExceptionForLastWin32Error() {
+			var ex = Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+			return ex;
+		}
+
 		public static Exception IOException(string message) {
 			return new System.IO.IOException(message);
 		}
